@@ -1,6 +1,3 @@
-# Docker
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
 - main
@@ -35,3 +32,49 @@ stages:
         command: 'build'
         projects: '**/*.csproj'
         arguments: '--configuration $(buildConfiguration)'
+
+    - task: Docker@2
+      displayName: 'Docker Image build and Push'
+      inputs:
+        containerRegistry: 'AzureAcrService'
+        repository: 'cedricdemodeployaks'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: '$(tag)'
+      
+    - task: PublishPipelineArtifact@1
+      inputs:
+        targetPath: '$(Pipeline.Workspace)/s/K8s'
+        artifact: 'manifests'
+        publishLocation: 'pipeline'
+
+- stage: Deploy
+  displayName: 'Kubernetes DeployMent'
+  dependsOn: Build
+  jobs:
+  - job: Deploy
+    pool:
+     vmImage: 'ubuntu-latest'
+    steps:
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          buildType: 'current'
+          targetPath: '$(Pipeline.Workspace)/manifests'
+        
+      - task: KubernetesManifest@0
+        inputs:
+          action: 'createSecret'
+          kubernetesServiceConnection: 'myAKSService'
+          namespace: 'default'
+          secretType: 'dockerRegistry'
+          secretName: 'acrsecret'
+          dockerRegistryEndpoint: 'AzureAcrService'
+        
+      - task: KubernetesManifest@0
+        inputs:
+          action: 'deploy'
+          kubernetesServiceConnection: 'myAKSService'
+          namespace: 'default'
+          manifests: |
+             $(Pipeline.Workspace)/manifests/deployment.yml
+             $(Pipeline.Workspace)/manifests/service.yml
