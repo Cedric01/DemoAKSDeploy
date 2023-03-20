@@ -79,8 +79,7 @@
             "dockerRun": {},
             "netCore": {
                 "appProject": "${workspaceFolder}/CedricDemo-Deploy-AKS/CedricDemo-Deploy-AKS.csproj",
-                "enableDebugging": true,
-                "configureSsl": false
+                "enableDebugging": true
             }
         },
         {

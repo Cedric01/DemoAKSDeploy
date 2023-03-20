@@ -10,3 +10,4 @@ services:
       dockerfile: CedricDemo-Deploy-AKS/Dockerfile
     ports:
       - 80:80
+      - 443:443
