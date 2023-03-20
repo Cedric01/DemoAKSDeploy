@@ -38,7 +38,7 @@ stages:
         containerRegistry: 'AzureAcrService'
         repository: 'cedricdemodeployaks'
         command: 'buildAndPush'
-        Dockerfile: '**/Dockerfile'
+        Dockerfile: '$(Build.SourcesDirectory)/CedricDemo-Deploy-AKS/Dockerfile'
       
     - task: PublishPipelineArtifact@1
       inputs:
